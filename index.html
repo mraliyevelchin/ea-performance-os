@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>EA Performance OS</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#111824;
+      --muted:#7f91a8;
+      --text:#e8eef6;
+      --good:#20c997;
+      --bad:#ff5c7a;
+      --warn:#ffd166;
+      --line:#203042;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+      background:linear-gradient(180deg, #070a0f, #0b0f14);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:5;
+      background:rgba(11,15,20,.75);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(32,48,66,.6);
+      padding:14px 16px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+    header .title{font-weight:700; letter-spacing:.2px}
+    header .sub{color:var(--muted); font-size:12px}
+    .wrap{max-width:980px; margin:0 auto; padding:16px 16px 90px}
+    .grid{display:grid; grid-template-columns: 1.3fr .7fr; gap:14px}
+    @media (max-width: 860px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      background:linear-gradient(180deg, rgba(17,24,36,.95), rgba(17,24,36,.8));
+      border:1px solid rgba(32,48,66,.8);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:0 0 10px; font-size:14px; color:#cfe0f3; letter-spacing:.3px}
+    .row{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .pill{
+      border:1px solid rgba(32,48,66,.9);
+      background:rgba(9,13,18,.35);
+      border-radius:999px;
+      padding:6px 10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .big{
+      font-size:28px; font-weight:800; letter-spacing:.3px;
+      display:flex; align-items:baseline; gap:10px;
+    }
+    .big small{font-size:12px; color:var(--muted); font-weight:600}
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    button{
+      border:0; border-radius:14px; padding:11px 12px;
+      font-weight:700; color:#0b0f14; cursor:pointer;
+      transition: transform .05s ease;
+    }
+    button:active{transform: scale(.99)}
+    .ok{background:var(--good)}
+    .no{background:var(--bad); color:#fff}
+    .ghost{
+      background:transparent; color:var(--text);
+      border:1px solid rgba(32,48,66,.9);
+    }
+    .muted{color:var(--muted); font-size:12px}
+    .sep{height:1px; background:rgba(32,48,66,.8); margin:12px 0}
+
+    .promises{display:grid; gap:10px}
+    .promise{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 10px; border-radius:14px;
+      border:1px solid rgba(32,48,66,.8);
+      background:rgba(9,13,18,.25);
+    }
+    .promise label{display:flex; gap:10px; align-items:center; cursor:pointer; width:100%}
+    .promise input{width:18px; height:18px}
+    .promise .tag{font-size:11px; color:var(--muted); border:1px solid rgba(32,48,66,.9); padding:4px 8px; border-radius:999px}
+    .promise .rm{font-size:12px}
+
+    .chainGrid{
+      display:grid; grid-template-columns: repeat(10, 1fr);
+      gap:6px; margin-top:10px;
+    }
+    .d{
+      height:14px; border-radius:4px; border:1px solid rgba(32,48,66,.8);
+      background:rgba(9,13,18,.35);
+    }
+    .d.good{background:rgba(32, 201, 151, .95); border-color: rgba(32,201,151,.65)}
+    .d.bad{background:rgba(255, 92, 122, .95); border-color: rgba(255,92,122,.65)}
+    .d.today{outline:2px solid rgba(255, 209, 102, .9)}
+    .nav{
+      position:fixed; left:0; right:0; bottom:0; z-index:10;
+      background:rgba(11,15,20,.75);
+      backdrop-filter: blur(12px);
+      border-top:1px solid rgba(32,48,66,.6);
+      padding:10px 10px calc(10px + env(safe-area-inset-bottom));
+    }
+    .tabs{max-width:980px; margin:0 auto; display:grid; grid-template-columns:repeat(6,1fr); gap:8px}
+    .tab{
+      background:rgba(9,13,18,.25); border:1px solid rgba(32,48,66,.85);
+      border-radius:14px; padding:10px 8px; text-align:center;
+      font-size:12px; color:var(--muted); font-weight:700;
+    }
+    .tab.active{color:var(--text); border-color: rgba(255, 209, 102, .7)}
+    .screen{display:none}
+    .screen.active{display:block}
+
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%; background:rgba(9,13,18,.25); color:var(--text);
+      border:1px solid rgba(32,48,66,.85); border-radius:14px;
+      padding:10px 12px; outline:none;
+    }
+    textarea{min-height:90px; resize:vertical}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:560px){ .two{grid-template-columns:1fr} }
+
+    table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; border:1px solid rgba(32,48,66,.8)}
+    th,td{padding:10px; font-size:12px; border-bottom:1px solid rgba(32,48,66,.6)}
+    th{color:#cfe0f3; text-align:left; background:rgba(9,13,18,.2)}
+    tr:last-child td{border-bottom:none}
+    .right{text-align:right}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <div class="title">EA Performance OS</div>
+      <div class="sub" id="todayLine">—</div>
+    </div>
+    <div class="pill" id="statusPill">Status: Pending</div>
+  </header>
+
+  <div class="wrap">
+    <!-- HOME -->
+    <section class="screen active" id="home">
+      <div class="grid">
+        <div class="card">
+          <h2>🔥 Discipline — Don’t Break the Chain</h2>
+          <div class="row">
+            <div class="big">
+              <span id="currentChain">0</span>
+              <small>Current Chain</small>
+            </div>
+            <div class="big">
+              <span id="longestChain">0</span>
+              <small>Longest</small>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <div class="muted">
+              Rule: Chain continues only if <b>ALL</b> promises are kept. If broken → <b>RESET to 0</b>.
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ok" id="btnKept">✅ I KEPT MY PROMISES TODAY</button>
+            <button class="no" id="btnBroke">❌ I BROKE THE CHAIN</button>
+            <button class="ghost" id="btnDailyClose">🌙 Daily Close</button>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <div>
+              <div class="muted">Last 60 days (visual pressure)</div>
+              <div class="chainGrid" id="chainGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>✅ Today’s Promises (max 3)</h2>
+          <div class="muted">Keep these, and the chain continues.</div>
+          <div class="sep"></div>
+
+          <div class="promises" id="promiseList"></div>
+
+          <div class="sep"></div>
+
+          <div class="two">
+            <div>
+              <input type="text" id="promiseText" placeholder="Add a promise (e.g., Follow daily plan)" />
+            </div>
+            <div>
+              <select id="promiseTag">
+                <option value="Plan">Plan</option>
+                <option value="Money">Money</option>
+                <option value="Fitness">Fitness</option>
+                <option value="Meditation">Meditation</option>
+                <option value="Learning">Learning</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns">
+            <button class="ghost" id="btnAddPromise">+ Add Promise</button>
+            <button class="ghost" id="btnResetPromises">Reset promises</button>
+          </div>
+          <div class="muted" id="promiseHint"></div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>📌 Today Overview</h2>
+          <div class="two">
+            <div>
+              <div class="muted">Top 3 tasks</div>
+              <textarea id="top3" placeholder="1) …&#10;2) …&#10;3) …"></textarea>
+              <div class="btns"><button class="ghost" id="saveTop3">Save</button></div>
+            </div>
+            <div>
+              <div class="muted">Quick notes</div>
+              <textarea id="quickNotes" placeholder="Trading notes, mood, wins, lessons…"></textarea>
+              <div class="btns"><button class="ghost" id="saveNotes">Save</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>⚡ Quick Status</h2>
+          <div class="muted">Simple checkmarks — expand later.</div>
+          <div class="sep"></div>
+          <div class="promises">
+            <div class="promise">
+              <label><input type="checkbox" id="chkWorkout" /> Workout / Move</label>
+              <span class="tag">Fitness</span>
+            </div>
+            <div class="promise">
+              <label><input type="checkbox" id="chkMeditation" /> Meditated</label>
+              <span class="tag">Meditation</span>
+            </div>
+            <div class="promise">
+              <label><input type="checkbox" id="chkLearning" /> Learned</label>
+              <span class="tag">Learning</span>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="btns"><button class="ghost" id="saveQuickStatus">Save</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MONEY -->
+    <section class="screen" id="money">
+      <div class="card">
+        <h2>💰 Daily Budget & Expense Tracker</h2>
+        <div class="two">
+          <div>
+            <input type="number" id="amt" placeholder="Amount (e.g., 12.50)" />
+          </div>
+          <div>
+            <select id="cat">
+              <option>Food</option><option>Transport</option><option>Bills</option><option>Gym</option>
+              <option>Shopping</option><option>Entertainment</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <input type="text" id="note" placeholder="Note (optional)" />
+        <div class="btns">
+          <button class="ok" id="addExpense">Add Expense</button>
+          <button class="ghost" id="clearExpenses">Clear Month</button>
+        </div>
+        <div class="sep"></div>
+        <div class="row">
+          <div class="pill" id="todaySpend">Today: 0</div>
+          <div class="pill" id="monthSpend">Month: 0</div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="card">
+        <h2>Transactions (this month)</h2>
+        <table>
+          <thead><tr><th>Date</th><th>Category</th><th>Note</th><th class="right">Amount</th></tr></thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="screen" id="plan">
+      <div class="card">
+        <h2>🗓️ Plan + Goals + Dream Board (v1)</h2>
+        <div class="muted">Start simple: daily/weekly/monthly text, expand to visuals later.</div>
+        <div class="sep"></div>
+        <div class="two">
+          <div>
+            <div class="muted">Weekly plan</div>
+            <textarea id="weeklyPlan" placeholder="Key focus, top outcomes, schedule blocks…"></textarea>
+            <div class="btns"><button class="ghost" id="saveWeekly">Save</button></div>
+          </div>
+          <div>
+            <div class="muted">Monthly goals</div>
+            <textarea id="monthlyGoals" placeholder="3–5 measurable goals…"></textarea>
+            <div class="btns"><button class="ghost" id="saveMonthly">Save</button></div>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="muted">Dream board (text placeholders for now)</div>
+        <textarea id="dreamBoard" placeholder="Add your vision items… (Later we add images/cards)"></textarea>
+        <div class="btns"><button class="ghost" id="saveDream">Save</button></div>
+      </div>
+    </section>
+
+    <!-- BODY -->
+    <section class="screen" id="body">
+      <div class="card">
+        <h2>🏋️ Fitness & Diet (v1)</h2>
+        <div class="two">
+          <div>
+            <div class="muted">Calories target</div>
+            <input type="number" id="calTarget" placeholder="Target (e.g., 1800)" />
+          </div>
+          <div>
+            <div class="muted">Calories consumed today</div>
+            <input type="number" id="calNow" placeholder="Consumed (e.g., 950)" />
+          </div>
+        </div>
+        <div class="btns">
+          <button class="ghost" id="saveCals">Save</button>
+        </div>
+        <div class="sep"></div>
+        <div class="muted" id="calLine">—</div>
+        <div class="sep"></div>
+        <div class="muted">Workout notes</div>
+        <textarea id="workoutNotes" placeholder="Exercises, sets, reps…"></textarea>
+        <div class="btns"><button class="ghost" id="saveWorkoutNotes">Save</button></div>
+      </div>
+    </section>
+
+    <!-- MIND -->
+    <section class="screen" id="mind">
+      <div class="card">
+        <h2>🧘 Meditation (v1)</h2>
+        <div class="muted">Simple timer + log.</div>
+        <div class="sep"></div>
+        <div class="two">
+          <div>
+            <div class="muted">Minutes</div>
+            <input type="number" id="medMins" placeholder="e.g., 10" />
+          </div>
+          <div>
+            <div class="muted">Done today?</div>
+            <select id="medDone">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:8px">Reflection (optional)</div>
+        <textarea id="medNote" placeholder="One line…"></textarea>
+        <div class="btns"><button class="ghost" id="saveMed">Save</button></div>
+      </div>
+    </section>
+
+    <!-- GROWTH -->
+    <section class="screen" id="growth">
+      <div class="card">
+        <h2>📚 Learning (v1)</h2>
+        <div class="two">
+          <div>
+            <div class="muted">Minutes learned today</div>
+            <input type="number" id="learnMins" placeholder="e.g., 30" />
+          </div>
+          <div>
+            <div class="muted">Topic</div>
+            <input type="text" id="learnTopic" placeholder="e.g., Macro, Valuation, Coding…" />
+          </div>
+        </div>
+        <div class="muted" style="margin-top:8px">Notes (optional)</div>
+        <textarea id="learnNote" placeholder="Key ideas, takeaways…"></textarea>
+        <div class="btns"><button class="ghost" id="saveLearn">Save</button></div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="nav">
+    <div class="tabs">
+      <div class="tab active" data-go="home">Home</div>
+      <div class="tab" data-go="money">Money</div>
+      <div class="tab" data-go="plan">Plan</div>
+      <div class="tab" data-go="body">Body</div>
+      <div class="tab" data-go="mind">Mind</div>
+      <div class="tab" data-go="growth">Learning</div>
+    </div>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
